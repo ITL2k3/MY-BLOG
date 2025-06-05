@@ -42,4 +42,4 @@ next-env.d.ts
 
 /src/generated/prisma
 /src/lib/validators
-/src/api/auth/admin.secret.json
+/src/app/api/auth/admin.secret.json

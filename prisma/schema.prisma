@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator zod {
+  provider = "prisma-zod-generator"
+  output   = "../src/lib/validators" 
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id             Int       @id @default(autoincrement())
+  title          String    @db.VarChar(255)
+  slug           String    @unique @db.VarChar(255)
+  description    String
+  content        String
+  estimated_time Int
+  isPublish      Boolean   @default(false)
+  views_count    Int       @default(0)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+  tags           PostTag[]
+  comments       Comment[]
+}
+
+model Tag {
+  id    Int       @id @default(autoincrement())
+  name  String    @unique @db.VarChar(100)
+  slug  String    @unique @db.VarChar(100)
+
+  posts PostTag[]
+}
+
+model PostTag {
+  post_id Int
+  tag_id  Int
+
+  post    Post @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  tag     Tag  @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@id([post_id, tag_id])
+}
+
+
+
+model Comment {
+  id               Int       @id @default(autoincrement())
+  post_id          Int
+  parent_comment_id Int?    
+
+  name             String    @db.VarChar(100)
+  email            String?   @db.VarChar(255)
+  content          String
+  created_at       DateTime  @default(now())
+
+  post             Post      @relation(fields: [post_id], references: [id], onDelete: Cascade)
+  parent_comment   Comment?  @relation("CommentToReplies", fields: [parent_comment_id], references: [id])
+  replies          Comment[] @relation("CommentToReplies")
+}
+
+model Contact {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(100)
+  email      String   @db.VarChar(255)
+  subject    String   @db.VarChar(255)
+  message    String
+  created_at DateTime @default(now())
+}
+
